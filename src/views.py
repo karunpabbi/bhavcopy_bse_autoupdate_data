@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.views.decorators.cache import cache_page
+from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
 import csv
 import io
@@ -36,7 +37,7 @@ def home(request):
         
     context = {'ticker': ticker}
     return render(request, 'home.html' , context)
-
+@csrf_exempt
 def upload(request):
     
     prompt={
@@ -53,15 +54,17 @@ def upload(request):
     data_set = csv_file.read().decode('UTF-8')
     io_string = io.StringIO(data_set)
     next(io_string)
+    print("Removing Old Data")
     Ticker.objects.all().delete()
+    print("Adding Updated Data")
     for column in csv.reader(io_string,delimiter=',',quotechar="|"):
         _, created = Ticker.objects.update_or_create(
             sc_code=column[0],
             sc_name=column[1],
-            sc_open=column[2],
-            sc_high=column[3],
-            sc_low=column[4],
-            sc_close=column[5],
+            sc_open=column[4],
+            sc_high=column[5],
+            sc_low=column[6],
+            sc_close=column[7],
         )
     
     # with open(csv_file) as csvfile:
