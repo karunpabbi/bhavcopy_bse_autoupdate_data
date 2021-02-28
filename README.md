@@ -10,7 +10,7 @@ TASKS PERFORMED :
 
 
 
-Containerized solution for Analysing BHav Copy from BSE :
+Containerized solution for Analysing Bhav Copy from BSE with the use of python scripting , django , vue.js , redis and GCP
 
 Docker images can be run using below commands:
 
