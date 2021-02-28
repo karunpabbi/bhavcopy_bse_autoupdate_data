@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <title>table</title>
+    <!-- Add this to <head> -->
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+    <!-- Add this after vue.js -->
+    <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+      window.Vue = Vue;
+<!--      Vue.use(VuePlugin);-->
+
+    </script>
+</head>
+<body>
+<div id="vm">
+    <div>
+        <center><h1>BHAVCOPY BSE ANALYSIS</h1></center>
+    </div>
+
+    <div class="container-fluid">
+        <center>
+            <form method="get">
+                <div class="mx-auto text-center d-flex col-md-4">
+                    <input class="form-control" name="ticker" placeholder="Search" style="width:400px">&nbsp;&nbsp;
+                    <button class="btn btn-primary col-md-4">Cached Search</button>
+
+                </div>
+
+            </form>
+        </center>
+    </div>&nbsp;&nbsp;
+    <template>
+        <b-container fluid>
+            <!-- User Interface controls -->
+            <b-row>
+                <b-col md="4" class="my-1">
+                    <b-form-group horizontal label="Filter" class="mb-0">
+                        <b-input-group>
+                            <b-form-input v-model="filter" placeholder="Type to Search"/>
+                            <b-input-group-append>
+                                <b-btn :disabled="!filter" @click="filter = ''">Clear</b-btn>
+                            </b-input-group-append>
+                        </b-input-group>
+                    </b-form-group>
+                </b-col>
+
+
+                <b-col md="4" class="my-1">
+                    <b-form-group horizontal label="Sort" class="mb-0">
+                        <b-input-group>
+                            <b-form-select v-model="sortBy" :options="sortOptions">
+                                <option slot="first" :value="null">-- none --</option>
+                            </b-form-select>
+                            <b-form-select :disabled="!sortBy" v-model="sortDesc" slot="append">
+                                <option :value="false">Asc</option>
+                                <option :value="true">Desc</option>
+                            </b-form-select>
+                        </b-input-group>
+                    </b-form-group>
+                </b-col>
+
+
+                <!--            <b-col md="1" class="my-1">-->
+                <!--              <b-form-group horizontal label="Sort direction" class="mb-0">-->
+                <!--                <b-input-group>-->
+                <!--                  <b-form-select v-model="sortDirection" slot="append">-->
+                <!--                    <option value="asc">Asc</option>-->
+                <!--                    <option value="desc">Desc</option>-->
+                <!--                    <option value="last">Last</option>-->
+                <!--                  </b-form-select>-->
+                <!--                </b-input-group>-->
+                <!--              </b-form-group>-->
+                <!--            </b-col>-->
+
+                <b-col md="4" class="my-1">
+                    <b-form-group horizontal label="Per page" class="mb-0">
+                        <b-form-select :options="pageOptions" v-model="perPage"/>
+                    </b-form-group>
+                </b-col>
+            </b-row>
+
+
+            <!-- Main table element -->
+            <b-table id="data-table" show-empty
+                     stacked="md"
+                     :items="items"
+                     :fields="fields"
+                     :current-page="currentPage"
+                     :per-page="perPage"
+                     :filter="filter"
+                     :sort-by.sync="sortBy"
+                     :sort-desc.sync="sortDesc"
+                     :sort-direction="sortDirection"
+                     @filtered="onFiltered"
+            >
+
+                <template slot="sc_name" slot-scope="row">{{row.value}}</template>
+                <template slot="sc_code" slot-scope="row">{{row.value}}</template>
+                <template slot="sc_open" slot-scope="row">{{row.value}}</template>
+                <template slot="sc_high" slot-scope="row">{{row.value}}</template>
+                <template slot="sc_low" slot-scope="row">{{row.value}}</template>
+                <template slot="sc_close" slot-scope="row">{{row.value}}</template>
+
+
+            </b-table>
+
+            <b-row>
+                <b-col md="6" class="my-1">
+                    <b-pagination :total-rows="totalRows" :per-page="perPage" v-model="currentPage" class="my-0"/>
+                </b-col>
+                <b-col>
+                    <button class="btn btn-primary float-right my-1" md="6"
+                            onclick="download_table_as_csv('data-table');">Download as CSV
+                    </button>
+                </b-col>
+            </b-row>
+
+            <!-- Info modal -->
+            <b-modal id="modalInfo" @hide="resetModal" :title="modalInfo.title" ok-only>
+                <pre>{{ modalInfo.content }}</pre>
+            </b-modal>
+
+        </b-container>
+    </template>
+
+</div>
+<script type="text/javascript">
+
+const items = [
+  {% if ticker %}
+              {% for r in ticker %}
+                { sc_code: {{r.sc_code}}, sc_name: "{{r.sc_name}}" , sc_open :{{r.sc_open}} ,sc_high :{{r.sc_high}} ,sc_low :{{r.sc_low}}  ,sc_close :{{r.sc_close}}   },
+              {% endfor %}
+  {% else %}
+                <p class="text-center"> No Ticker Found.. Please Check the name</p>
+  {% endif %}
+
+
+];
+  var app=  new Vue({
+  el: '#vm',
+  data: {
+    items: items,
+    fields: [
+      { key: 'sc_name', label: 'TICKER NAME', sortable: true, sortDirection: 'asc' },
+      { key: 'sc_code', label: 'TICKER CODE', sortable: true, 'class': 'text-center' },
+	  { key: 'sc_open', label: 'OPEN', sortable: true, 'class': 'text-center' },
+	  { key: 'sc_high', label: 'HIGH', sortable: true, 'class': 'text-center' },
+      { key: 'sc_low', label: 'LOW', sortable: true, 'class': 'text-center' },
+      { key: 'sc_close', label: 'CLOSE' , sortable: true, 'class': 'text-center' }
+    ],
+    currentPage: 1,
+    perPage: 12,
+    totalRows: items.length,
+    pageOptions: [ 12,24,36,48,60 ],
+    sortBy: null,
+    sortDesc: false,
+    sortDirection: 'asc',
+    filter: null,
+    modalInfo: { title: '', content: '' }
+  },
+  mounted() {
+    console.log('app created...');
+  },
+  computed: {
+  sortOptions () {
+    // Create an options list from our fields
+    return this.fields
+      .filter(f => f.sortable)
+      .map(f => { return { text: f.label, value: f.key } })
+    }
+  },
+  methods: {
+    info (item, index, button) {
+      this.modalInfo.title = `Row index: ${index}`
+      this.modalInfo.content = JSON.stringify(item, null, 2)
+      this.$root.$emit('bv::show::modal', 'modalInfo', button)
+    },
+    resetModal () {
+      this.modalInfo.title = ''
+      this.modalInfo.content = ''
+    },
+    onFiltered (filteredItems) {
+      // Trigger pagination to update the number of buttons/pages due to filtering
+      this.totalRows = filteredItems.length
+      this.currentPage = 1
+    }
+  },
+});
+
+
+<!---->
+<!--JS FOR CSV DOWNLOAD -->
+<!---->
+
+// Quick and simple export target #table_id into a csv
+function download_table_as_csv(table_id, separator = ',') {
+    // Select rows from table_id
+    var rows = document.querySelectorAll('table#' + table_id + ' tr');
+    // Construct csv
+    var csv = [];
+    for (var i = 0; i < rows.length; i++) {
+        var row = [], cols = rows[i].querySelectorAll('td, th');
+        for (var j = 0; j < cols.length; j++) {
+            // Clean innertext to remove multiple spaces and jumpline (break csv)
+            var data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ')
+            // Escape double-quote with double-double-quote (see https://stackoverflow.com/questions/17808511/properly-escape-a-double-quote-in-csv)
+            data = data.replace(/"/g, '""');
+            // Push escaped string
+            row.push('"' + data + '"');
+        }
+        csv.push(row.join(separator));
+    }
+    var csv_string = csv.join('\n');
+    // Download it
+    var filename = 'export_' + table_id + '_' + new Date().toLocaleDateString() + '.csv';
+    var link = document.createElement('a');
+    link.style.display = 'none';
+    link.setAttribute('target', '_blank');
+    link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv_string));
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+
+
+</script>
+
+
+</body>
+</html>
