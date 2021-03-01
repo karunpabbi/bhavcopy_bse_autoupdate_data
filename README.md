@@ -8,8 +8,8 @@ TASKS PERFORMED :
 - The search needs to be performed on the backend using Redis.
 
 PFB the source code and demo URL link:
- SOURCE CODE : https://github.com/karunpabbi/bhavcopy_bse_autoupdate_data
- URL : http://34.122.251.120/
+	SOURCE CODE : https://github.com/karunpabbi/bhavcopy_bse_autoupdate_data
+	URL : http://34.122.251.120/
 
 
 Containerized solution for Analysing Bhav Copy from BSE with the use of python scripting , django , vue.js , redis and GCP
